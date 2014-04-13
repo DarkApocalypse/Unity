@@ -24,6 +24,7 @@ public class PokemonObj : MonoBehaviour {
 			}
 			
 			if (pokemon.hp<=0){
+				pokemon.hp=0;
 				Return();
 			}
 		}

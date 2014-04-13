@@ -13,35 +13,40 @@ public class Pokeball : MonoBehaviour {
 	void Update(){
 		if (lifetime<2.9f)	collider.enabled = true;
 
-		if (pokemon!=null){
-			lifetime-=Time.deltaTime;
-			if (lifetime<0 && !fired){
-				Transform particles = transform.FindChild("Particles");
-				if (particles){
-					particles.parent = null;
-					particles.GetComponent<ParticleSystem>().Play();
-					Destroy(particles.gameObject, 1);
-				}
-				Destroy(gameObject);
-				fired = true;
-
-				if (pokemon!=null){
-					GameObject pokeObj = (GameObject)Instantiate(Resources.Load("Pokemon/"+Pokemon.GetName(pokemon.number)));
-					pokeObj.transform.position = transform.position;
-					pokeObj.transform.rotation = Quaternion.Euler(0,Random.value*360,0);
-					pokeObj.GetComponent<PokemonObj>().pokemon = pokemon;
-					pokeObj.name = pokemon.name;
-					pokemon.obj = pokeObj.GetComponent<PokemonObj>();
-					PokemonDomesticated pokeDom = pokeObj.AddComponent<PokemonDomesticated>();
-					pokeDom.trainer = trainer;
-
-					//assuming direct control
-					if (trainer==Player.trainer){
-						Player.pokemonActive = true;
-						Debug.Log("Assuming direct control");
+		if (pokemon != null) {
+			lifetime -= Time.deltaTime;
+			if (lifetime < 0 && !fired) {
+					Transform particles = transform.FindChild ("Particles");
+					if (particles) {
+							particles.parent = null;
+							particles.GetComponent<ParticleSystem> ().Play ();
+							Destroy (particles.gameObject, 1);
 					}
-				}
+					Destroy (gameObject);
+					fired = true;
+
+					if (pokemon != null) {
+							GameObject pokeObj = (GameObject)Instantiate (Resources.Load ("Pokemon/" + Pokemon.GetName (pokemon.number)));
+							pokeObj.transform.position = transform.position;
+							pokeObj.transform.rotation = Quaternion.Euler (0, Random.value * 360, 0);
+							pokeObj.GetComponent<PokemonObj> ().pokemon = pokemon;
+							pokeObj.name = pokemon.name;
+							pokemon.obj = pokeObj.GetComponent<PokemonObj> ();
+							PokemonDomesticated pokeDom = pokeObj.AddComponent<PokemonDomesticated> ();
+							pokeDom.trainer = trainer;
+
+							//assuming direct control
+							if (trainer == Player.trainer) {
+									Player.pokemonActive = true;
+									Debug.Log ("Assuming direct control");
+							}
+					}
 			}
+		}
+		else {
+			CapturePokemon();
+			Destroy (gameObject);
+			fired = true;
 		}
 	}
 
@@ -56,6 +61,9 @@ public class Pokeball : MonoBehaviour {
 				pokemonOb = poke;
 			}
 		}
+		if (Player.pokemonActive && Player.pokemon.obj.enemy != null)
+			pokemonOb = Player.pokemon.obj.enemy.gameObject;
+
 
 		GameObject ball = (GameObject)Instantiate(Resources.Load("Pokeball"));
 		ball.transform.position = GameObject.Find("_PokeballHolder").transform.position;

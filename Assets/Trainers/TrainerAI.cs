@@ -43,6 +43,9 @@ public class TrainerAI : MonoBehaviour {
 	}
 	
 	void InBattle(){
+		Debug.Log ("TEST JIMMY InBattle v2");
+		if (currentPokemon != null)
+						Debug.Log ("TEST JIMMY " + currentPokemon.GetName () + " HP:" + currentPokemon.hp.ToString ());
 		//move trainer to position
 		Vector3 direct = trainerPos-transform.position;
 		direct.y = 0;
@@ -51,8 +54,13 @@ public class TrainerAI : MonoBehaviour {
 			GetComponent<Animator>().SetBool("run", true);
 		}else{
 			if (direct.sqrMagnitude>1)	transform.position += direct;
-			if (currentPokemon==null){
-				currentPokemon = trainer.pokemon[0];
+			if (currentPokemon==null || currentPokemon.hp <= 0){
+				foreach( Pokemon poke in trainer.pokemon){
+					if(poke.hp>0){
+						currentPokemon = poke;
+						break;
+					}
+				}
 			}
 
 			if (currentPokemon.obj!=null){
@@ -63,7 +71,55 @@ public class TrainerAI : MonoBehaviour {
 			direct.y = 0;
 			transform.rotation = Quaternion.LookRotation(direct);
 			GetComponent<Animator>().SetBool("run", false);
-			if (currentPokemon.obj==null)	trainer.ThrowPokemon(trainer.pokemon[0]);
+			if (currentPokemon.obj==null && currentPokemon.hp > 0){
+				trainer.ThrowPokemon(currentPokemon);
+			}
+			else if(currentPokemon.hp <=0){
+				Player.trainer.money+=trainer.money;
+				string items = "";
+				for(int i=0;i<trainer.inventory.Count;i++){
+					Item item = trainer.inventory[i];
+					items = (items.Length > 0 ? items + "\n-" : "") + item.number.ToString()+ " "+item.type.ToString();
+					Player.trainer.inventory.Add(item);
+				}
+				Dialog.inDialog = true;
+				Dialog.NPCobj = gameObject;
+				Dialog.NPCname = "Young Trainer";
+				Dialog.text = "Okay, okay you win don't hit any more my pokemon!";
+				Item.CombineInventory(Player.trainer.inventory);
+				trainer.money=0;
+				trainer.inventory.Clear();
+
+				if (Dialog.doneDialog){
+					Dialog.inDialog = false;
+					currentState=States.Defeated;
+				}
+			}
+			else{
+				foreach(Pokemon poke in enemyTrainer.pokemon){
+					if(poke.thrown && poke.obj!=null){
+						currentPokemon.obj.transform.LookAt(poke.obj.transform);
+						direct = poke.obj.transform.position-currentPokemon.obj.transform.position;
+						direct.y=0;
+						if(direct.sqrMagnitude > 2){	//IA pokemon go to player pokemon
+							currentPokemon.obj.rigidbody.AddForce(direct * 100);
+						}
+						else{
+							//TODO: Classify move by damage or effect to simplify IA pokemon
+							bool done = false;
+							foreach(Move move in currentPokemon.moves){
+								if(move.moveType==MoveNames.Tackle || move.moveType==MoveNames.Scratch){
+									done = currentPokemon.obj.UseMove(direct,move);
+									if(done)
+										break;
+								}
+							};
+							if(!done && currentPokemon.moves.Count>0)
+								currentPokemon.obj.UseMove(direct,currentPokemon.moves[0]);
+						}
+					}
+				}
+			}
 		}
 		
 		/*if (currentPokemonObj!=null){

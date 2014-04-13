@@ -20,11 +20,42 @@ public class Item{
 
 	public void Use(){
 		switch(type){
-		case ItemTypes.Pokeball:
-			//Pokeball.ThrowPokeBall(Player.This.gameObject);
-			number--;
-			return;
+			case ItemTypes.Pokeball:
+				Pokeball.ThrowPokeBall(Player.trainer);
+				number--;
+			break;
+			case ItemTypes.MaxPotion:
+				if(Player.pokemon.hp>0){
+					Player.pokemon.hp = 1.0f;
+					number--;
+				}
+			break;
+			case ItemTypes.HyperPotion:
+				if(Player.pokemon.hp>0){
+					Player.pokemon.hp+= 200.0f / Player.pokemon.TotalHP();
+					if(Player.pokemon.hp>1.0f)
+						Player.pokemon.hp = 1.0f;
+					number--;
+				}
+			break;
+			case ItemTypes.SuperPotion:
+				if(Player.pokemon.hp>0){
+					Player.pokemon.hp+= 50.0f / Player.pokemon.TotalHP();
+					if(Player.pokemon.hp>1.0f)
+						Player.pokemon.hp = 1.0f;
+					number--;
+				}
+			break;
+			case ItemTypes.Potion:
+				if(Player.pokemon.hp>0){
+					Player.pokemon.hp+= 20.0f / Player.pokemon.TotalHP();
+					if(Player.pokemon.hp>1.0f)
+						Player.pokemon.hp = 1.0f;
+					number--;
+				}
+			break;
 		}
+
 	}
 
 	public static void CombineInventory(List<Item> inventory){
